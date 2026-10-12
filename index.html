@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Mnemo — Ағылшын сөздік тренажеры</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f7fe;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        h1 {
+            color: #2b3674;
+            text-align: center;
+            font-size: 26px;
+            margin-top: 0;
+            margin-bottom: 6px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #707ebe;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #2b3674;
+        }
+        .timer-badge {
+            background-color: #ffe8e8;
+            color: #ee5d50;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 15px;
+            display: none;
+        }
+        .card {
+            border: 2px solid #e9ecef;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafbff;
+        }
+        .word-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .word-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4318ff;
+        }
+        .btn-audio {
+            background-color: #eef2ff;
+            color: #4318ff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .btn-audio:hover {
+            background-color: #dbe4ff;
+        }
+        .assoc-box {
+            background-color: #eef2ff;
+            border-left: 4px solid #4318ff;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #2b3674;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .word-translation {
+            font-size: 16px;
+            color: #2b3674;
+            padding: 10px;
+            background-color: #e6f9f0;
+            border-radius: 8px;
+            border: 1px dashed #05cd99;
+            text-align: center;
+            display: none; /* Әдепкіде жасырулы */
+        }
+        .btn-show-hint {
+            background: none;
+            border: none;
+            color: #707ebe;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+            width: 100%;
+            text-align: center;
+            margin-top: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #dce2f0;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #4318ff;
+        }
+        .btn-submit {
+            width: 100%;
+            background-color: #4318ff;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #3311cc;
+        }
+        .btn-start-test {
+            background-color: #05cd99;
+        }
+        .btn-start-test:hover {
+            background-color: #04b385;
+        }
+        .result-message {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 16px;
+            min-height: 24px;
+        }
+        .correct { color: #05cd99; }
+        .wrong { color: #ee5d50; }
+        
+        .summary-card {
+            text-align: center;
+            padding: 20px 10px;
+        }
+        .score-big {
+            font-size: 48px;
+            font-weight: 800;
+            color: #4318ff;
+            margin: 15px 0;
+        }
+        .stat-group {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .stat-item {
+            background: #f4f7fe;
+            padding: 15px;
+            border-radius: 12px;
+            width: 30%;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2b3674;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #707ebe;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <h1>AI-Mnemo Веб-тренажеры</h1>
+    <p class="subtitle">Мнемотехника және AI арқылы сөздерді есте сақтау</p>
+
+    <div class="top-bar">
+        <span id="progress">Сөз: 1 / 20</span>
+        <span class="timer-badge" id="timer">⏱ 15 сек</span>
+    </div>
+
+    <div class="card">
+        <div class="word-header">
+            <div class="word-title" id="word">umbrella</div>
+            <button class="btn-audio" onclick="speakWord()">🔊 Тыңдау</button>
+        </div>
+        
+        <!-- Негізгі назар Ассоциацияға аударылады -->
+        <div class="assoc-box">
+            💡 <strong>AI Ассоциация:</strong> <span id="association">«Амбрелла» — Амбарда үлкен қолшатыр ашылып тұр.</span>
+        </div>
+
+        <!-- Көмек ретінде аудармасын ашу түймесі -->
+        <button class="btn-show-hint" id="hint-btn" onclick="toggleTranslation()">👁 Аудармасын тексеру</button>
+        <div class="word-translation" id="translation-box">
+            Аудармасы: <strong id="translation">қолшатыр</strong>
+        </div>
+    </div>
+
+    <div class="test-box" id="test-area">
+        <button class="btn-submit btn-start-test" onclick="startTestMode()">Тест тапсыру ➔</button>
+        <div class="result-message" id="result-msg"></div>
+    </div>
+</div>
+
+<script>
+    const vocabulary = [
+        { word: "umbrella", translation: "қолшатыр", assoc: "«Амбрелла» — Амбарда үлкен қолшатыр ашылып тұр." },
+        { word: "bridge", translation: "көпір", assoc: "«Бридж» — Көпірдің үстінде Бригада тобы бара жатыр." },
+        { word: "library", translation: "кітапхана", assoc: "«Лайбрари» — Кітапханада бәрі кітаптарға лайк басып жатыр." },
+        { word: "mountain", translation: "тау", assoc: "«Маунтин» — Тауда Маугли фонтан ағызып жатыр." },
+        { word: "river", translation: "өзен", assoc: "«Ривер» — Өзенде Ривер балықтары жүзіп жүр." },
+        { word: "forest", translation: "орман", assoc: "«Форест» — Орманда Форест Гамп жүгіріп жүр." },
+        { word: "journey", translation: "саяхат", assoc: "«Джорни» — Саяхатқа Жорнал ұстап шықтық." },
+        { word: "careful", translation: "абай болу", assoc: "«Кеарфул» — Кемеде абай болу керек." },
+        { word: "bright", translation: "жарық", assoc: "«Брайт» — Жарық шамды Брат жандырып қойды." },
+        { word: "discover", translation: "ашу", assoc: "«Дискавер» — Дискотекада жаңа сыр ашу." },
+        { word: "ancient", translation: "ежелгі", assoc: "«Эйншент» — Ежелгі заманда Эйнштейн өмір сүргендей." },
+        { word: "protect", translation: "қорғау", assoc: "«Протект» — Протеин ішіп, денсаулықты қорғау." },
+        { word: "planet", translation: "планета", assoc: "«Планет» — Планетада үлкен Планшет жатыр." },
+        { word: "weather", translation: "ауа райы", assoc: "«Везер» — Ауа райы бұзылса, Велосипед айдамаймыз." },
+        { word: "village", translation: "ауыл", assoc: "«Вилледж» — Ауылда Вилла салынды." },
+        { word: "future", translation: "болашақ", assoc: "«Фьюче» — Болашақта Футболды роботтар ойнайды." },
+        { word: "science", translation: "ғылым", assoc: "«Сайенс» — Ғылыммен айналысатындар Сайлауға қатысады." },
+        { word: "friendship", translation: "достық", assoc: "«Френдшип» — Достық кемесі (Ship) мұхитта жүзіп жүр." },
+        { word: "healthy", translation: "дені сау", assoc: "«Хелси» — Дені сау адам Халва жейді." },
+        { word: "language", translation: "тіл", assoc: "«Лэнгвидж» — Тіл үйрену үшін Лимон жеп жаттығу." }
+    ];
+
+    let currentIndex = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let timeLeft = 15;
+    let timerInterval = null;
+
+    function init() {
+        currentIndex = 0;
+        correctCount = 0;
+        wrongCount = 0;
+        loadStudyCard();
+    }
+
+    function loadStudyCard() {
+        if (currentIndex >= vocabulary.length) {
+            showSummary();
+            return;
+        }
+
+        clearInterval(timerInterval);
+        document.getElementById("timer").style.display = "none";
+
+        const item = vocabulary[currentIndex];
+        document.getElementById("word").innerText = item.word;
+        document.getElementById("translation").innerText = item.translation;
+        document.getElementById("translation-box").style.display = "none"; // Аударма жасырулы
+        document.getElementById("hint-btn").style.display = "block";
+        document.getElementById("association").innerText = item.assoc;
+        document.getElementById("progress").innerText = `Сөз: ${currentIndex + 1} / ${vocabulary.length}`;
+        
+        const testArea = document.getElementById("test-area");
+        testArea.innerHTML = `
+            <button class="btn-submit btn-start-test" onclick="startTestMode()">Тест тапсыру ➔</button>
+            <div class="result-message" id="result-msg"></div>
+        `;
+    }
+
+    function toggleTranslation() {
+        const box = document.getElementById("translation-box");
+        if (box.style.display === "none" || box.style.display === "") {
+            box.style.display = "block";
+        } else {
+            box.style.display = "none";
+        }
+    }
+
+    function startTestMode() {
+        document.getElementById("translation-box").style.display = "none";
+        document.getElementById("hint-btn").style.display = "none";
+        document.getElementById("timer").style.display = "inline-block";
+
+        const testArea = document.getElementById("test-area");
+        testArea.innerHTML = `
+            <label for="answer-input" style="display:block; margin-bottom:8px; font-weight:600; color:#2b3674;">Қазақша мағынасын жазыңыз:</label>
+            <input type="text" id="answer-input" placeholder="Жауабыңызды енгізіңіз..." autocomplete="off">
+            <button class="btn-submit" onclick="submitAnswer()">Тексеру</button>
+            <div class="result-message" id="result-msg"></div>
+        `;
+
+        const inputElem = document.getElementById("answer-input");
+        inputElem.focus();
+
+        inputElem.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                submitAnswer();
+            }
+        });
+
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeLeft = 15;
+        document.getElementById("timer").innerText = `⏱ ${timeLeft} сек`;
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById("timer").innerText = `⏱ ${timeLeft} сек`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleTimeout();
+            }
+        }, 1000);
+    }
+
+    function speakWord() {
+        const text = vocabulary[currentIndex].word;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function submitAnswer() {
+        clearInterval(timerInterval);
+        const inputElem = document.getElementById("answer-input");
+        const userAns = inputElem.value.trim().toLowerCase();
+        const currentTrans = vocabulary[currentIndex].translation.toLowerCase();
+        const msgElem = document.getElementById("result-msg");
+        
+        if (!userAns) {
+            msgElem.innerText = "Өтініш, жауапты жазыңыз!";
+            msgElem.className = "result-message wrong";
+            startTimer();
+            return;
+        }
+
+        if (userAns === currentTrans || currentTrans.includes(userAns)) {
+            correctCount++;
+            msgElem.innerText = "✨ Дұрыс!";
+            msgElem.className = "result-message correct";
+        } else {
+            wrongCount++;
+            msgElem.innerText = `❌ Қате. Дұрысы: ${vocabulary[currentIndex].translation}`;
+            msgElem.className = "result-message wrong";
+        }
+
+        inputElem.disabled = true;
+
+        setTimeout(() => {
+            currentIndex++;
+            loadStudyCard();
+        }, 1500);
+    }
+
+    function handleTimeout() {
+        wrongCount++;
+        const msgElem = document.getElementById("result-msg");
+        msgElem.innerText = `⏰ Уақыт аяқталды! Дұрысы: ${vocabulary[currentIndex].translation}`;
+        msgElem.className = "result-message wrong";
+        
+        const inputElem = document.getElementById("answer-input");
+        if (inputElem) inputElem.disabled = true;
+
+        setTimeout(() => {
+            currentIndex++;
+            loadStudyCard();
+        }, 1800);
+    }
+
+    function showSummary() {
+        clearInterval(timerInterval);
+        const total = vocabulary.length;
+        const percentage = Math.round((correctCount / total) * 100);
+
+        const app = document.getElementById("app");
+        app.innerHTML = `
+            <div class="summary-card">
+                <h1>Тестілеу аяқталды! 🎉</h1>
+                <p class="subtitle">AI-Mnemo тренажеры бойынша нәтижеңіз:</p>
+                
+                <div class="score-big">${percentage}%</div>
+                
+                <div class="stat-group">
+                    <div class="stat-item">
+                        <div class="stat-value">${total}</div>
+                        <div class="stat-label">Барлық сөз</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #05cd99;">${correctCount}</div>
+                        <div class="stat-label">Дұрыс</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: #ee5d50;">${wrongCount}</div>
+                        <div class="stat-label">Қате / Уақыт өтті</div>
+                    </div>
+                </div>
+
+                <button class="btn-submit" onclick="location.reload()">Қайта өту</button>
+            </div>
+        `;
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
